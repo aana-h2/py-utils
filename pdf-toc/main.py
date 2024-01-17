@@ -1,7 +1,6 @@
-from pathlib import Path
+import sys
 from typing import Tuple, Optional
-
-from pypdf import PdfWriter, PdfReader
+from pypdf import PdfWriter
 
 
 class TocItem:
@@ -92,21 +91,20 @@ class TocCreator:
 
 def install_toc(pdf_path: str, toc_root: TocItem):
     pdf_writer = PdfWriter(clone_from=pdf_path)
-    # pdf_writer.clone_reader_document_root(clone)
-    # pdf_writer.clone_document_from_reader(pdf_reader)
-
-    # 会返回一个 bookmark对象，子结点用这个作为parent。
+    pdf_writer.get_outline_root().empty_tree()
 
     def inner(toc_item: TocItem, parent):
         for toc_item in toc_item.sublist:
-            new_parent = pdf_writer.add_outline_item(toc_item.content, toc_item.page, parent)
+            # TODO -- add flag to clear existing toc
+            new_parent = pdf_writer.add_outline_item(toc_item.content, toc_item.page - 1, parent)
             if len(toc_item.sublist) > 0:
                 inner(toc_item, new_parent)
 
     inner(toc_root, None)
     pdf_writer.write(f"{pdf_path}.toc")
 
+
 if __name__ == '__main__':
-    toc_root = TocCreator('toc.txt').create_toc()
-    pdf_path = 'Steven S. Muchnick - Advanced Compiler Design and Implementation 1 (1997, Morgan Kaufmann) - libgen.li.pdf'
+    toc_root = TocCreator(sys.argv[1]).create_toc()
+    pdf_path = sys.argv[2]
     install_toc(pdf_path, toc_root)
