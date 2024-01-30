@@ -1,0 +1,4 @@
+pypdf==3.17.2
+beautifulsoup4
+requests
+pillow==10.2.0
